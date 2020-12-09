@@ -1,8 +1,19 @@
+/*
+	A simple bank management system	in C++ std-17.
+
+	Author:		Dipayan Sarker
+	Date:		December 09, 2020
+	file:		DisplayUI.cc
+
+	Version:	2.0.0.1
+*/
+
 #include <cstring>
 #include <conio.h> // _getch()
 #include <iomanip>
 #include <sstream>
 #include <utility>
+#include <iostream>
 
 #include "displayui.h"
 #include "defines.h"
@@ -46,7 +57,7 @@ void DisplayUI::coverMenu() const
 	this->clearScreen();
 }
 
-void DisplayUI::accountStatusMenu(const std::string& accFormatStr) const
+void DisplayUI::accountStatusMenu(std::string_view accFormatStr) const
 {
 	std::string temp;
 	std::cout << CARRIAGE_RETURN << DOUBLE_NEWLINE << DOUBLE_NEWLINE
@@ -54,7 +65,7 @@ void DisplayUI::accountStatusMenu(const std::string& accFormatStr) const
 		<< TRIPPLE_NEWLINE << DOUBLE_TAB << accFormatStr << NEWLINE;
 }
 
-void DisplayUI::allAccountMenu(const std::string& accListFormatStr) const
+void DisplayUI::allAccountMenu(std::string_view accListFormatStr) const
 {
 	char heading[] = "List of All the Account Holders";
 	size_t headingLen = std::strlen(heading);
@@ -71,7 +82,7 @@ void DisplayUI::clearScreen() const
 	this->m_clear();
 }
 
-void DisplayUI::printTransectionHeader(const char* str) const
+void DisplayUI::printTransectionHeader(std::string_view str) const
 {
 	std::cout << DOUBLE_NEWLINE << DOUBLE_TAB
 		<< "Enter the amount to " << str << ':' << TAB;
@@ -81,10 +92,11 @@ DisplayUI::DisplayUI(void(*clearFunc)()) : m_clear(clearFunc)
 {
 }
 
-std::string& DisplayUI::getHeadingMenuString(const char* menuName, char character, size_t len, std::string& out) const
+std::string& DisplayUI::getHeadingMenuString(std::string_view menuName, char character, size_t len, std::string& out) const
 {
 	std::ostringstream oss;
-	oss << std::move(std::string(len, character)) << menuName << std::move(std::string(len, character));
+	std::string chr(len, character);
+	oss << chr << menuName << chr;
 	out = std::move(oss.str());
 	return out;
 }

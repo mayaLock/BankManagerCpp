@@ -1,3 +1,13 @@
+/*
+    A simple bank management system	in C++ std-17.
+
+    Author:		Dipayan Sarker
+    Date:		December 09, 2020
+    file:		main.cc
+
+    Version:	2.0.0.1
+*/
+
 #if !defined(WIN32_LEAN_AND_MEAN)
 #define WIN32_LEAN_AND_MEAN
 #endif

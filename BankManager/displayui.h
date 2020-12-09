@@ -1,8 +1,17 @@
+/*
+	A simple bank management system	in C++ std-17.
+
+	Author:		Dipayan Sarker
+	Date:		December 09, 2020
+	file:		displayui.h
+
+	Version:	2.0.0.1
+*/
+
 #pragma once
 
-#include <iostream>
-#include <vector>
 #include <string>
+#include <string_view>
 
 class DisplayUI final
 {
@@ -17,11 +26,11 @@ public:
 public:
 	char mainMenu() const;
 	void coverMenu() const;
-	void accountStatusMenu(const std::string& accFormatStr) const;
-	void allAccountMenu(const std::string& accListFormatStr) const;
+	void accountStatusMenu(std::string_view accFormatStr) const;
+	void allAccountMenu(std::string_view accListFormatStr) const;
 	void clearScreen() const;
-	void printTransectionHeader(const char* str) const;
-	std::string& getHeadingMenuString(const char* menuName, char character, size_t len, std::string& out) const;
+	void printTransectionHeader(std::string_view str) const;
+	std::string& getHeadingMenuString(std::string_view menuName, char character, size_t len, std::string& out) const;
 private:
 	void (*m_clear)();
 };

@@ -1,5 +1,14 @@
+/*
+	A simple bank management system	in C++ std-17.
+
+	Author:		Dipayan Sarker
+	Date:		December 09, 2020
+	file:		BankManager.cc
+
+	Version:	2.0.0.1
+*/
+
 #include <algorithm>
-#include <utility>
 #include <sstream>
 #include <iomanip>
 #include <fstream>
@@ -8,19 +17,9 @@
 #include "bankmanager.h"
 #include "defines.h"
 
-static const char* storeFileName = "v8.dat";
+static std::string_view storeFileName = "v8.dat";
 
-bool BankManager::createNewAccount(const char* name, const AccountType& acType, const long double& balance)
-{
-	if (this->accountExists(name))
-	{
-		return false;
-	}
-	this->m_bankInfo.push_back(BankData(name, acType, balance)); // move constructor is called
-	return true;
-}
-
-bool BankManager::deleteAccount(const unsigned long& acNum, const char* name)
+bool BankManager::deleteAccount(const unsigned long& acNum, std::string_view name)
 {
 	if (!this->accountExists(acNum) || !this->accountExists(name))
 	{
@@ -30,7 +29,7 @@ bool BankManager::deleteAccount(const unsigned long& acNum, const char* name)
 	return true;
 }
 
-bool BankManager::updateBalance(const unsigned long& acNum, const char* name, const long double& balance)
+bool BankManager::updateBalance(const unsigned long& acNum, std::string_view name, const long double& balance)
 {
 	if (!this->accountExists(acNum) || !this->accountExists(name))
 	{
@@ -43,12 +42,7 @@ bool BankManager::updateBalance(const unsigned long& acNum, const char* name, co
 	return true;
 }
 
-bool BankManager::updateAccountInfo(const unsigned long& acNum, const char* name, const char* newName)
-{
-	return this->updateAccountInfo(acNum, name, newName, nullptr);
-}
-
-bool BankManager::accountExists(const char* name) const
+bool BankManager::accountExists(std::string_view name) const
 {
 	return std::find(this->m_bankInfo.begin(), this->m_bankInfo.end(), name) != this->m_bankInfo.end();
 }
@@ -76,7 +70,7 @@ std::string BankManager::to_string() const
 
 bool BankManager::store() const // serialization
 {
-	std::ofstream ofs(storeFileName, std::ios::binary | std::ios::out); // not a good approach since we may have big chunk of data so we create file each time we invoke store()
+	std::ofstream ofs(storeFileName.data(), std::ios::binary | std::ios::out); // not a good approach since we may have big chunk of data so we create file each time we invoke store()
 	if (!ofs.good() || !ofs.is_open())									// what would be a better option?
 	{
 		return false;
@@ -92,32 +86,31 @@ bool BankManager::store() const // serialization
 
 bool BankManager::load() // deserialization; only call once at app initialization
 {
-	std::ifstream ifs(storeFileName, std::ios::in | std::ios::binary);
+	std::ifstream ifs(storeFileName.data(), std::ios::in | std::ios::binary);
 	if (!ifs.good() || !ifs.is_open())
 	{
 		return false;
 	}
-	std::string tmp;
+	std::string tmp, name;
+	unsigned long acNum, acCount;
+	AccountType acType;
+	long double balance;
 	std::getline(ifs, tmp, '*'); // vSize
 	size_t vSize = std::stoull(tmp);
 	std::getline(ifs, tmp, '*'); // count
-	unsigned long acCount = std::stoul(tmp);
+	acCount = std::stoul(tmp);
 	BankData::setAccountCount(acCount);
 	for (size_t i = 0UL; i < vSize; i++)
 	{
 		std::getline(ifs, tmp, ';');
-		acCount = std::stoul(tmp); // acNum, in this case
-		BankData b;
-		b.setAcNum(acCount);
+		acNum = std::stoul(tmp); // acNum
 		std::getline(ifs, tmp, '\0'); // name
-		b.setName(tmp.c_str());
+		name = std::move(tmp);
 		std::getline(ifs, tmp, ';'); // acType
-		AccountType acType = charToAccountType(tmp[0]);
-		b.setAcType(acType);
+		acType = charToAccountType(tmp[0]);
 		std::getline(ifs, tmp, '*'); // balance
-		long double balance = std::stold(tmp);
-		b.setBalace(balance);
-		this->m_bankInfo.push_back(std::move(b)); // 'b' is not a r-value, so we cast it one
+		balance = std::stold(tmp);
+		this->createNewAccount(acNum, std::move(name), acType, balance);
 	}
 	ifs.close();
 	return true;
@@ -130,14 +123,19 @@ const BankData& BankManager::getBankData(const unsigned long& acNum) const
 	return this->m_bankInfo.at(pos);
 }
 
-bool BankManager::updateAccountInfo(const unsigned long& acNum, const char* name, const AccountType& acType)
+bool BankManager::updateAccountInfo(const unsigned long& acNum, std::string_view name, const AccountType& acType)
 {
 	return this->updateAccountInfo(acNum, name, nullptr, &acType);
 }
 
-bool BankManager::updateAccountInfo(const unsigned long& acNum, const char* name, const char* newName, const AccountType* acType)
+bool BankManager::updateAccountInfo(const unsigned long& acNum, std::string_view name, std::string_view newName)
 {
-	if (name == nullptr && acType == nullptr)
+	return this->updateAccountInfo(acNum, name, &newName, nullptr);
+}
+
+bool BankManager::updateAccountInfo(const unsigned long& acNum, std::string_view name, std::string_view* newName, const AccountType* acType)
+{
+	if (name.empty() && acType == nullptr)
 	{
 		return false;
 	}
@@ -148,7 +146,7 @@ bool BankManager::updateAccountInfo(const unsigned long& acNum, const char* name
 	BankData& clientData = this->getBankData(acNum);
 	if (newName != nullptr)
 	{
-		clientData.setName(newName);
+		clientData.setName(*newName);
 	}
 	if (acType != nullptr)
 	{
@@ -164,7 +162,7 @@ bool BankManager::accountExists(const unsigned long& acNum) const
 
 BankManager::BankManager()
 {
-	if (existsFile(storeFileName))
+	if (existsFile(storeFileName.data()))
 	{
 		if (!this->load())
 		{

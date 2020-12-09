@@ -1,3 +1,13 @@
+/*
+    A simple bank management system	in C++ std-17.
+
+    Author:		Dipayan Sarker
+    Date:		December 09, 2020
+    file:		BankManagerApp.cc
+
+    Version:	2.0.0.1
+*/
+
 #include <cctype>
 #include <vector>
 #include <utility>
@@ -10,9 +20,6 @@
 BankManagerApp::BankManagerApp(void(*clearFunc)())
     : m_ptrBM(new BankManager()), m_ptrDisUI(new DisplayUI(clearFunc))
 {
-    // this may throw std::bad_alloc
-    // how to overcome this without checking if these two
-    // pointers are nullptr or not for each function call?
 }
 
 BankManagerApp::~BankManagerApp()
@@ -124,20 +131,11 @@ void BankManagerApp::createNewAccount()
         std::getline(std::cin, temp); // balance
     } while (temp.compare("") == 0 || !isFloat(temp));
     accountInfo.push_back(std::move(temp));
-    if (!this->m_ptrBM->createNewAccount(
-        accountInfo.at(0).c_str(),
-        charToAccountType(accountInfo.at(1)[0]),
-        std::stold(accountInfo.at(2))))
-    {
-        std::cout << "couldn't create account\n";
-    }
-    else
-    {
-        std::cout << DOUBLE_NEWLINE << TRIPPLE_TAB << "Record Updated!!!";
-    }
+    this->m_ptrBM->createNewAccount(std::move(accountInfo.at(0)), charToAccountType(accountInfo.at(1)[0]), std::stold(accountInfo.at(2)));
+    std::cout << DOUBLE_NEWLINE << TRIPPLE_TAB << "Record Updated!!!";
 }
 
-void BankManagerApp::updateBalance(const unsigned long& acNum, const char* name, bool deposit)
+void BankManagerApp::updateBalance(const unsigned long& acNum, std::string_view name, bool deposit)
 {
     sleepFor(500);
     this->m_ptrDisUI->clearScreen();
@@ -186,7 +184,7 @@ void BankManagerApp::showAllAccounts() const
     this->m_ptrDisUI->allAccountMenu(temp);
 }
 
-void BankManagerApp::updateAccountInfo(const unsigned long& acNum, const char* name)
+void BankManagerApp::updateAccountInfo(const unsigned long& acNum, std::string_view name)
 {
     sleepFor(500);
     this->m_ptrDisUI->clearScreen();
@@ -282,7 +280,7 @@ void BankManagerApp::updateAccountInfo(const unsigned long& acNum, const char* n
     }
 }
 
-void BankManagerApp::deleteAccount(const unsigned long& acNum, const char* name)
+void BankManagerApp::deleteAccount(const unsigned long& acNum, std::string_view name)
 {
     sleepFor(500);
     this->m_ptrDisUI->clearScreen();

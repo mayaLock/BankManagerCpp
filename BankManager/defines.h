@@ -1,3 +1,13 @@
+/*
+	A simple bank management system	in C++ std-17.
+
+	Author:		Dipayan Sarker
+	Date:		December 09, 2020
+	file:		defines.h
+
+	Version:	2.0.0.1
+*/
+
 #pragma once
 
 #include <chrono>
@@ -6,7 +16,6 @@
 #include <regex>
 #include <fstream>
 
-constexpr size_t MAX_STR_LEN = 30UL;
 constexpr size_t MENU_HEADER_ARRAY_LEN = 8UL;
 constexpr const char* DOUBLE_NEWLINE = "\n\n";
 constexpr char NEWLINE = '\n';

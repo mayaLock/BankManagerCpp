@@ -1,21 +1,30 @@
-#include <cstring>
+/*
+	A simple bank management system	in C++ std-17.
+
+	Author:		Dipayan Sarker
+	Date:		December 09, 2020
+	file:		BankData.cc
+
+	Version:	2.0.0.1
+*/
+
 #include <sstream>
+#include <utility>
 
 #include "bankdata.h"
 
 unsigned long BankData::sm_acNum = 0UL;
 
-BankData::BankData() 
-	: m_acNum(0UL), m_name(""), m_acType(AccountType::CURRENT), m_balance(0.0L)
-{
-}
-
-BankData::BankData(const char* name, const AccountType& acType, const long double& balance)
-	: m_acType(acType), m_balance(balance)
+BankData::BankData(std::string&&name, const AccountType& acType, const long double& balance)
+	: m_name(std::move(name)), m_acType(acType), m_balance(balance)
 {
 	++BankData::sm_acNum;
 	this->m_acNum = BankData::sm_acNum;
-	strcpy_s(this->m_name, MAX_STR_LEN, name);
+}
+
+BankData::BankData(const unsigned long& acNum, std::string&& name, const AccountType& acType, const long double& balance)
+	: m_acNum(acNum), m_name(std::move(name)), m_acType(acType), m_balance(balance)
+{
 }
 
 bool BankData::operator==(const unsigned long& acNum) const
@@ -23,9 +32,9 @@ bool BankData::operator==(const unsigned long& acNum) const
 	return this->m_acNum == acNum;
 }
 
-bool BankData::operator==(const char* name) const
+bool BankData::operator==(std::string_view name) const
 {
-	return std::strcmp(this->m_name, name) == 0;
+	return (this->m_name.compare(name) == 0);
 }
 
 BankData::operator std::string() const
@@ -38,14 +47,14 @@ BankData::operator std::string() const
 	return oss.str();
 }
 
-const char* BankData::getName() const
+std::string_view BankData::getName() const
 {
 	return this->m_name;
 }
 
-void BankData::setName(const char* name)
+void BankData::setName(std::string_view name)
 {
-	strcpy_s(this->m_name, MAX_STR_LEN, name);
+	this->m_name = name;
 }
 
 AccountType BankData::getAcType() const
@@ -73,12 +82,7 @@ unsigned long BankData::getAcNum() const
 	return this->m_acNum;
 }
 
-void BankData::setAcNum(const unsigned long& acNum)
-{
-	this->m_acNum = acNum;
-}
-
-std::ofstream& BankData::prepareForStore(std::ofstream& ofs) const // serialization
+std::ostream& BankData::prepareForStore(std::ostream& ofs) const // serialization
 {
 	ofs << this->m_acNum << ';' << this->m_name << '\0' << accountTypeToChar(this->m_acType)
 		<< ';' << this->m_balance;
